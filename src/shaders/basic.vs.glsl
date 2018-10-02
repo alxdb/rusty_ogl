@@ -1,9 +1,11 @@
 #version 140
 
-in vec3 pos;
+in vec3 position;
 
+uniform mat4 perspective;
 uniform mat4 transform;
+uniform int frame;
 
 void main() {
-    gl_Position = transform * vec4(pos, 1.0);
+    gl_Position = perspective * transform * vec4(position, 1.0);
 }
