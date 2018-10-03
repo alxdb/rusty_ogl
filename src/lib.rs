@@ -46,6 +46,45 @@ impl Object {
         }
     }
 
+    pub fn plane(origin: &glm::Vec3, size: f32, divisions: u16) -> Object {
+        let spacing = size / divisions as f32;
+        let mut vertices = Vec::new();
+        let mut indices = Vec::new();
+        for i in 0..=divisions {
+            for j in 0..=divisions {
+                vertices.push(Vertex::new(
+                    &(origin + glm::vec3(spacing * j as f32, spacing * i as f32, 0.0)),
+                ));
+                if j < divisions && i < divisions {
+                    let index = i * (divisions + 1) + j;
+                    indices.append(&mut vec![
+                        index,
+                        index + 1,
+                        index + divisions + 1,
+                        index + 1,
+                        index + divisions + 1,
+                        index + divisions + 2,
+                    ]);
+                    // println!(
+                    //     "{:?}",
+                    //     vec![
+                    //         index,
+                    //         index + 1,
+                    //         index + divisions + 1,
+                    //         index + 1,
+                    //         index + divisions + 1,
+                    //         index + divisions + 2
+                    //     ]
+                    // );
+                }
+            }
+        }
+        Object {
+            vertices: vertices,
+            indices: indices,
+        }
+    }
+
     pub fn triangle(a: &glm::Vec3, b: &glm::Vec3, c: &glm::Vec3) -> Object {
         Object {
             vertices: vec![Vertex::new(a), Vertex::new(b), Vertex::new(c)],
