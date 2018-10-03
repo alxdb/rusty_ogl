@@ -5,6 +5,7 @@ extern crate rusty_ogl;
 
 use glium::glutin;
 use glium::Surface;
+use rusty_ogl::Colour;
 use rusty_ogl::Object;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -12,19 +13,29 @@ use std::time::{Duration, Instant};
 fn main() {
     let (display, mut events_loop) = init();
 
-    let square = Object::square(glm::vec3(-0.5, -0.5, 0.0), 1.0);
+    // let square = Object::square(&glm::vec3(-0.5, -0.5, 0.0), 1.0);
+    let square = Object::triangle(
+        &glm::vec3(-0.5, -0.5, 0.0),
+        &glm::vec3(0.5, -0.5, 0.0),
+        &glm::vec3(0.0, 0.5, 0.0),
+    );
 
     let program = glium::Program::from_source(
         &display,
-        include_str!("shaders/ripple.vs.glsl"),
+        include_str!("shaders/basic.vs.glsl"),
         include_str!("shaders/basic.fs.glsl"),
         None,
     ).unwrap();
+
+    // let draw_params = glium::DrawParameters {
+    //     ..Default::default()
+    // };
 
     let spf = Duration::from_nanos(((1.0 / 30.0) * 1e9) as u64);
     let mut frame_count = 0;
     main_loop(&mut events_loop, || {
         let start = Instant::now();
+        let time = frame_count as f32;
         let mut target = display.draw();
         target.clear_color_and_depth((0.015, 0.015, 0.015, 1.0), 1.0);
 
@@ -34,6 +45,7 @@ fn main() {
         let perspective: glm::Mat4 =
             glm::perspective(std::f32::consts::FRAC_PI_2, screen_ratio, 0.0, 100.0);
         let mut transform: glm::Mat4 = glm::translate(&glm::identity(), &glm::vec3(0.0, 0.0, -1.0));
+        // let mut transform: glm::Mat4 = glm::identity();
 
         transform = glm::rotate(
             &transform,
@@ -41,10 +53,32 @@ fn main() {
             &glm::vec3(-1.0, 0.0, 0.0),
         );
 
+        let r_square = square.transform(|v| {
+            let pos = v.pos();
+            let origin = glm::vec3(0.0, 0.5, 0.0);
+            let phase = glm::distance(&pos, &origin);
+            let wave = (time * 0.1 + phase).sin() * 0.1;
+            let mut vertex = rusty_ogl::Vertex::new(&(pos + glm::vec3(0.0, 0.0, wave)));
+            println!("{}", wave);
+            vertex.set_colour(&Colour((wave * 5.0) + 0.5, 0.0, 0.0));
+            vertex
+        });
+
+        // if frame_count > -1 {
+        //     square.transform(|v| {
+        //         println!(
+        //             "{}",
+        //             glm::distance(&v.pos(), &glm::vec3(-0.5, 0.5, 0.0)).abs()
+        //         );
+
+        //         *v
+        //     });
+        // }
+
         target
             .draw(
-                &square.vertex_buffer(&display),
-                &square.index_buffer(&display),
+                &r_square.vertex_buffer(&display),
+                &r_square.index_buffer(&display),
                 &program,
                 &uniform! {perspective: *perspective.as_ref(), transform: *transform.as_ref(), frame: frame_count},
                 &Default::default(),
@@ -89,7 +123,7 @@ fn init() -> (glium::Display, glutin::EventsLoop) {
     let window =
         glutin::WindowBuilder::new().with_fullscreen(Some(events_loop.get_primary_monitor()));
     // glutin::WindowBuilder::new();
-    let context = glutin::ContextBuilder::new();
+    let context = glutin::ContextBuilder::new().with_multisampling(8);
     (
         glium::Display::new(window, context, &events_loop).unwrap(),
         events_loop,
