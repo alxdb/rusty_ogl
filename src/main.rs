@@ -5,19 +5,22 @@ extern crate rusty_ogl;
 
 use glium::glutin;
 use glium::Surface;
-use rusty_ogl::geometry;
+use rusty_ogl::*;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 fn main() {
-    let (display, mut events_loop) = init();
+    // let (display, mut events_loop) = init();
+    let world = world::WorldBuilder {
+        ..Default::default()
+    }.build();
 
-    let program = glium::Program::from_source(
-        &display,
-        include_str!("shaders/basic.vs.glsl"),
-        include_str!("shaders/basic.fs.glsl"),
-        None,
-    ).unwrap();
+    // let program = glium::Program::from_source(
+    //     &display,
+    //     include_str!("shaders/basic.vs.glsl"),
+    //     include_str!("shaders/basic.fs.glsl"),
+    //     None,
+    // ).unwrap();
 
     let draw_params = glium::DrawParameters {
         depth: glium::Depth {
@@ -117,18 +120,4 @@ fn main_loop<F: FnMut()>(events_loop: &mut glutin::EventsLoop, mut f: F) {
             _ => (),
         });
     }
-}
-
-fn init() -> (glium::Display, glutin::EventsLoop) {
-    let events_loop = glutin::EventsLoop::new();
-    let window =
-        glutin::WindowBuilder::new().with_fullscreen(Some(events_loop.get_primary_monitor()));
-    // glutin::WindowBuilder::new();
-    let context = glutin::ContextBuilder::new()
-        .with_multisampling(8)
-        .with_depth_buffer(24);
-    (
-        glium::Display::new(window, context, &events_loop).unwrap(),
-        events_loop,
-    )
 }
