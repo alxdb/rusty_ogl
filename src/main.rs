@@ -5,21 +5,12 @@ extern crate rusty_ogl;
 
 use glium::glutin;
 use glium::Surface;
-use rusty_ogl::Colour;
-use rusty_ogl::Object;
+use rusty_ogl::geometry;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
 fn main() {
     let (display, mut events_loop) = init();
-
-    // let square = Object::square(&glm::vec3(-0.5, -0.5, 0.0), 1.0);
-    let square = Object::plane(&glm::vec3(-0.5, -0.5, 0.0), 1.0, 50);
-    // let triangle = Object::triangle(
-    //     &glm::vec3(-0.5, -0.5, 0.0),
-    //     &glm::vec3(0.5, -0.5, 0.0),
-    //     &glm::vec3(0.0, 0.5, 0.0),
-    // );
 
     let program = glium::Program::from_source(
         &display,
@@ -37,6 +28,8 @@ fn main() {
         ..Default::default()
     };
 
+    let plane = geometry::Object::plane(&glm::vec3(-0.75, -0.75, 0.0), 1.25, 50);
+
     let spf = Duration::from_nanos(((1.0 / 30.0) * 1e9) as u64);
     let mut frame_count = 0;
     main_loop(&mut events_loop, || {
@@ -47,32 +40,39 @@ fn main() {
 
         let window_dims = display.get_framebuffer_dimensions();
         let screen_ratio = window_dims.0 as f32 / window_dims.1 as f32;
-        let perspective: glm::Mat4 = glm::ortho(-screen_ratio, screen_ratio, -1.0, 1.0, 0.0, 100.0);
-        // let perspective: glm::Mat4 =
-        //     glm::perspective(std::f32::consts::FRAC_PI_2, screen_ratio, 0.0, -100.0);
+        // let perspective: glm::Mat4 = glm::ortho(-screen_ratio, screen_ratio, -1.0, 1.0, 0.0, 2.0);
+        let perspective: glm::Mat4 =
+            glm::perspective(std::f32::consts::FRAC_PI_2, screen_ratio, 0.01, 100.0);
         let mut transform: glm::Mat4 = glm::translate(&glm::identity(), &glm::vec3(0.0, 0.0, -1.0));
         // let mut transform: glm::Mat4 = glm::identity();
 
         transform = glm::rotate(
             &transform,
-            std::f32::consts::FRAC_PI_3,
+            std::f32::consts::FRAC_PI_4,
             &glm::vec3(-1.0, 0.0, 0.0),
         );
         transform = glm::rotate(
             &transform,
-            std::f32::consts::FRAC_PI_4,
+            std::f32::consts::FRAC_PI_8,
             &glm::vec3(0.0, 0.0, 1.0),
         );
 
-        let r_square = square.transform(|v| {
+        let r_square = plane.transform(|v| {
             let pos = v.pos();
             let origin = glm::vec3(0.0, 0.0, 0.0);
+            let origin2 = glm::vec3(0.0, 0.0, 0.0);
             let phase = glm::distance(&pos, &origin) * 20.0;
+            let phase2 = glm::distance(&pos, &origin2) * 20.0;
             let wave = (time * 0.05 + phase).sin() * 0.1;
-            let wave2 = (-time * 0.05 - phase).sin() * 0.1;
-            let mut vertex = rusty_ogl::Vertex::new(&(pos + glm::vec3(0.0, 0.0, wave)));
+            let wave2 = (-time * 0.075 + phase2).sin() * 0.1;
+            let wave3 = (-time * 0.025 - phase).sin() * 0.1;
+            let mut vertex = geometry::Vertex::new(&(pos + glm::vec3(0.0, 0.0, wave)));
             // println!("{}", v.pos().transpose());
-            vertex.set_colour(&Colour(0.0, (wave2 * 2.5) + 0.5, (wave * 2.5) + 0.5));
+            vertex.set_colour(&glm::vec3(
+                ((wave3 * 5.0) + 0.5) * 0.2,
+                ((wave2 * 5.0) + 0.5) * 0.1,
+                ((wave * 5.0) + 0.5) * 0.1,
+            ));
             vertex
         });
 
