@@ -15,8 +15,8 @@ impl Shader {
 impl Default for Shader {
     fn default() -> Self {
         Shader {
-            vertex_source: include_str!("basic.vs.glsl"),
-            fragment_source: include_str!("basic.fs.glsl"),
+            vertex_source: include_str!("glsl/basic.vs.glsl"),
+            fragment_source: include_str!("glsl/basic.fs.glsl"),
         }
     }
 }

@@ -1,35 +1,66 @@
 use glium::{self, glutin, Surface};
-use glm;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
-mod geometry;
-use self::geometry::{Buffers, Object};
+// use geometry::Object;
+// use geometry::Shape;
 
 pub struct World {
     events_loop: glutin::EventsLoop,
     display: glium::Display,
-    objects: Vec<(Object, Buffers)>,
+    spf: Duration,
+    frames: u32,
 }
 
 impl World {
-    pub fn draw(&self, objects: Vec<Object>) {
-        let mut target = self.display.draw();
-        target.clear_color_and_depth((0.015, 0.015, 0.015, 1.0), 1.0);
+    pub fn draw_loop<F: FnMut(&mut glium::Frame, (u32, u32), u32)>(&mut self, mut draw_func: F) {
+        let mut closed = false;
+        while !closed {
+            let start = Instant::now();
 
-        let window_dims = self.display.get_framebuffer_dimensions();
-        let screen_ratio = window_dims.0 as f32 / window_dims.1 as f32;
-        let projection = glm::perspective(::std::f32::consts::FRAC_PI_2, screen_ratio, 0.01, 100.0);
+            let mut target = self.display.draw();
+            target.clear_color_and_depth((0.015, 0.015, 0.015, 1.0), 1.0);
 
-        let view = glm::translate(&glm::identity(), &glm::vec3(0.0, 0.0, -1.0));
+            draw_func(
+                &mut target,
+                self.display.get_framebuffer_dimensions(),
+                self.frames,
+            );
 
-        for object in objects {
-            object.draw(self.display).unwrap();
+            target.finish().unwrap();
+
+            self.events_loop.poll_events(|ev| match ev {
+                glutin::Event::WindowEvent { event, .. } => match event {
+                    glutin::WindowEvent::CloseRequested => closed = true,
+                    glutin::WindowEvent::KeyboardInput { input, .. } => match input.virtual_keycode
+                    {
+                        Some(glutin::VirtualKeyCode::Escape) => closed = true,
+                        _ => (),
+                    },
+                    _ => (),
+                },
+                _ => (),
+            });
+
+            let end = Instant::now();
+            let duration = end - start;
+            if duration < self.spf {
+                sleep(self.spf - duration);
+            }
+
+            self.frames += 1;
         }
+    }
+
+    pub fn get_display(&self) -> &glium::Display {
+        &self.display
     }
 }
 
 pub struct WorldBuilder {
     pub fullscreen: bool,
     pub msaa: bool,
+    pub fps: f32,
 }
 
 impl Default for WorldBuilder {
@@ -37,6 +68,7 @@ impl Default for WorldBuilder {
         WorldBuilder {
             fullscreen: true,
             msaa: true,
+            fps: 30.0,
         }
     }
 }
@@ -61,9 +93,12 @@ impl WorldBuilder {
 
         let display = glium::Display::new(window, context, &events_loop).unwrap();
 
+        let spf = Duration::from_nanos(((1.0 / self.fps) * 1e9) as u64);
         World {
             events_loop: events_loop,
             display: display,
+            spf: spf,
+            frames: 0,
         }
     }
 }
