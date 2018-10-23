@@ -1,9 +1,5 @@
 use glium::{self, glutin, Surface};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
-
-// use geometry::Object;
-// use geometry::Shape;
+use std::{time::{Duration, Instant}, thread::sleep};
 
 pub struct World {
     events_loop: glutin::EventsLoop,
@@ -95,9 +91,9 @@ impl WorldBuilder {
 
         let spf = Duration::from_nanos(((1.0 / self.fps) * 1e9) as u64);
         World {
-            events_loop: events_loop,
-            display: display,
-            spf: spf,
+            events_loop,
+            display,
+            spf,
             frames: 0,
         }
     }

@@ -32,17 +32,6 @@ fn main() {
         },
     );
 
-    // plane.transform(|p, c| {
-    //     let polar = p.y * std::f32::consts::PI;
-    //     let azimuth = p.x * std::f32::consts::FRAC_PI_2;
-    //     (
-    //         glm::vec3(
-    //         polar.sin() * azimuth.cos(),
-    //         polar.sin() * azimuth.sin(),
-    //         polar.cos())
-    //     , glm::vec3((p.x + 1.0) / 2.0, (p.y + 1.0) / 2.0, 0.0))
-    // })
-
     let mut sphere = geometry::Object::new(
         world.get_display(),
         geometry::Shape::sphere(&glm::Vec3::zeros(), 1.0, 50),
