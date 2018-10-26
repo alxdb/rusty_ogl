@@ -1,3 +1,4 @@
+use glium::index::PrimitiveType;
 use glm;
 use std::f32::consts;
 
@@ -5,7 +6,7 @@ pub type Index = u16;
 
 pub struct Shape {
     pub points: Vec<glm::Vec3>,
-    pub indices: Vec<Index>,
+    pub indices: (PrimitiveType, Vec<Index>),
 }
 
 impl Shape {
@@ -30,15 +31,15 @@ impl Shape {
             }
         }
         Shape {
-            points: points,
-            indices: indices,
+            points,
+            indices: (PrimitiveType::TrianglesList, indices),
         }
     }
 
     pub fn triangle(a: &glm::Vec3, b: &glm::Vec3, c: &glm::Vec3) -> Self {
         Shape {
             points: vec![a.clone(), b.clone(), c.clone()],
-            indices: vec![0, 1, 2],
+            indices: (PrimitiveType::TrianglesList, vec![0, 1, 2]),
         }
     }
 
@@ -50,7 +51,7 @@ impl Shape {
                 origin + glm::vec3(0.0, size, 0.0),
                 origin + glm::vec3(size, size, 0.0),
             ],
-            indices: vec![0, 1, 2, 1, 2, 3],
+            indices: (PrimitiveType::TrianglesList, vec![0, 1, 2, 1, 2, 3]),
         }
     }
 
@@ -74,7 +75,7 @@ impl Shape {
                 origin + glm::vec3(0.0, size, size),
                 origin + glm::vec3(size, size, size),
             ],
-            indices: indices,
+            indices: (PrimitiveType::TrianglesList, indices),
         }
     }
 
@@ -92,7 +93,7 @@ impl Shape {
             points.push(origin + (sphere_point * radius));
         }
         Shape {
-            points: points,
+            points,
             indices: plane.indices,
         }
     }
@@ -115,7 +116,7 @@ impl Shape {
         }
         Shape {
             points: vec![*origin],
-            indices: vec![0],
+            indices: (PrimitiveType::TrianglesList, vec![0]),
         }
     }
 }

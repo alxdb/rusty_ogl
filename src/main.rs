@@ -23,7 +23,7 @@ fn main() {
         ..Default::default()
     };
 
-    let mut plane = geometry::Object::new(
+    let plane = geometry::Object::new(
         world.get_display(),
         geometry::Shape::plane(&glm::vec3(-1.0, -1.0, 0.0), 2.0, 100),
         |p| {
@@ -55,19 +55,28 @@ fn main() {
         let aspect = dims.0 as f32 / dims.1 as f32;
         let time = frame as f32;
 
-        let zoom = 0.5;
-        // let projection: glm::Mat4 = glm::ortho(-aspect / zoom, aspect / zoom, -1.0 / zoom, 1.0 / zoom, 0.0, 100.0);
+        // let zoom = 0.5;
+        // let projection: glm::Mat4 = glm::ortho(-aspect / zoom, aspect / zoom, -1.0 / zoom, 1.0 /
+        // zoom, 0.0, 100.0);
         let projection: glm::Mat4 = glm::perspective(consts::FRAC_PI_2, aspect, 0.01, 100.0);
 
-        let view: glm::Mat4 = glm::look_at(&glm::vec3(0.0, 1.0, 3.0), &glm::vec3(0.0, 0.0, 0.0), &glm::vec3(0.0, 1.0, 0.0));
+        let view: glm::Mat4 = glm::look_at(
+            &glm::vec3(0.0, 1.0, 3.0),
+            &glm::vec3(0.0, 0.0, 0.0),
+            &glm::vec3(0.0, 1.0, 0.0),
+        );
 
-        let uniform = &uniform!{ projection: *projection.as_ref(), view: *view.as_ref(), transform: *sphere.global_transform.as_ref() };
-        sphere.draw(surface, &program, uniform, &draw_params).unwrap();
+        let uniform = &uniform!{ projection: *projection.as_ref(), view: *view.as_ref(), transform:
+        *sphere.global_transform.as_ref() };
+        sphere
+            .draw(surface, &program, uniform, &draw_params)
+            .unwrap();
         sphere.global_transform = glm::rotation(time * 0.05, &glm::Vec3::y_axis());
 
         sphere.transform(|mut p, c| {
             let dist = glm::distance(&glm::vec3(0.0, 1.0, 0.0), &p);
             let wave = (time * 0.1 + dist * 8.0).sin() * 0.1;
+
             p += p.normalize() * wave;
             (p, c)
         });
@@ -75,8 +84,9 @@ fn main() {
         cube.draw(
             surface,
             &program,
-            &uniform!{ projection: *projection.as_ref(), view: *view.as_ref(), transform: *cube.global_transform.as_ref() },
-            &draw_params
+            &uniform!{ projection: *projection.as_ref(), view:
+            *view.as_ref(), transform: *cube.global_transform.as_ref() },
+            &draw_params,
         ).unwrap();
         cube.global_transform = glm::rotation(time * 0.05, &glm::Vec3::y_axis());
 
@@ -86,6 +96,8 @@ fn main() {
             (p + glm::vec3(0.0, 0.0, wave), c)
         });
 
-        plane.draw(surface, &program, uniform, &draw_params).unwrap();
+        plane
+            .draw(surface, &program, uniform, &draw_params)
+            .unwrap();
     });
 }

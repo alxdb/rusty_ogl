@@ -1,4 +1,4 @@
-use glium::{self, uniforms};
+use glium::{self, index::PrimitiveType, uniforms};
 use glm;
 
 mod primitives;
@@ -27,14 +27,14 @@ struct Buffers {
 }
 
 impl Buffers {
-    fn new(display: &glium::Display, vertices: &[Vertex], indices: &[Index]) -> Buffers {
+    fn new(
+        display: &glium::Display,
+        vertices: &[Vertex],
+        indices: &(PrimitiveType, Vec<Index>),
+    ) -> Buffers {
         Buffers {
             vertex_buffer: glium::VertexBuffer::dynamic(display, vertices).unwrap(),
-            index_buffer: glium::IndexBuffer::persistent(
-                display,
-                glium::index::PrimitiveType::TrianglesList,
-                indices,
-            ).unwrap(),
+            index_buffer: glium::IndexBuffer::persistent(display, indices.0, &indices.1).unwrap(),
         }
     }
 }
@@ -59,8 +59,8 @@ impl Object {
         let buffers = Buffers::new(display, &vertices, &shape.indices);
         Object {
             init_vertices: vertices.clone(),
-            vertices: vertices,
-            buffers: buffers,
+            vertices,
+            buffers,
             global_transform: glm::identity(),
         }
     }
